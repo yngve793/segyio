@@ -34,6 +34,19 @@ extern "C" {
 struct segy_file_handle;
 typedef struct segy_file_handle segy_file;
 
+typedef struct {
+    union {
+        uint8_t u8;
+        uint16_t u16;
+        uint32_t u32;
+        int8_t i8;
+        int16_t i16;
+        int32_t i32;
+    } value;
+    uint8_t datatype;
+    int32_t field_id;
+} field_data;
+
 segy_file* segy_open( const char* path, const char* mode );
 int segy_mmap( segy_file* );
 int segy_flush( segy_file*, bool async );
@@ -88,6 +101,8 @@ int segy_set_format( segy_file*, int format );
  * MSB, regardless of the properties of the underlying file.
  */
 int segy_set_endianness( segy_file*, int opt );
+
+int fd_get_int( const field_data* fd, int* val );
 
 int segy_get_field( const char* traceheader, int field, int32_t* f );
 int segy_get_bfield( const char* binheader, int field, int32_t* f );
@@ -626,6 +641,7 @@ typedef enum {
     SEGY_FREAD_ERROR,
     SEGY_FWRITE_ERROR,
     SEGY_INVALID_FIELD,
+    SEGY_INVALID_FIELD_VALUE,
     SEGY_INVALID_SORTING,
     SEGY_MISSING_LINE_INDEX,
     SEGY_INVALID_OFFSETS,
