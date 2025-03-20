@@ -8,10 +8,10 @@
 
 static void printSegyTraceInfo( const char* buf ) {
     int cdp, tsf, xl, il;
-    segy_get_field( buf, SEGY_TR_ENSEMBLE, &cdp );
-    segy_get_field( buf, SEGY_TR_SEQ_FILE, &tsf );
-    segy_get_field( buf, SEGY_TR_CROSSLINE, &xl );
-    segy_get_field( buf, SEGY_TR_INLINE, &il );
+    segy_get_field_i32( buf, SEGY_TR_ENSEMBLE, &cdp );
+    segy_get_field_i32( buf, SEGY_TR_SEQ_FILE, &tsf );
+    segy_get_field_i32( buf, SEGY_TR_CROSSLINE, &xl );
+    segy_get_field_i32( buf, SEGY_TR_INLINE, &il );
 
     printf("cdp:               %d\n", cdp );
     printf("TraceSequenceFile: %d\n", tsf );
@@ -113,8 +113,8 @@ int main(int argc, char* argv[]) {
             exit( err );
         }
 
-        int sample_count;
-        err = segy_get_field( traceh, SEGY_TR_SAMPLE_COUNT, &sample_count );
+        int16_t sample_count;
+        err = segy_get_field_i16( traceh, SEGY_TR_SAMPLE_COUNT, &sample_count );
 
         if( err != 0 ) {
             fprintf( stderr, "Invalid trace header field: %d\n", SEGY_TR_SAMPLE_COUNT );

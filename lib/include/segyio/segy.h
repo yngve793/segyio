@@ -39,6 +39,8 @@ typedef struct {
     uint8_t type;
 } FieldData;
 
+int segy_get_field_i16( const char* header, int field, int16_t* val );
+int segy_get_field_i32( const char* header, int field, int32_t* val );
 segy_file* segy_open( const char* path, const char* mode );
 int segy_mmap( segy_file* );
 int segy_flush( segy_file*, bool async );

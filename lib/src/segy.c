@@ -626,6 +626,23 @@ static int get_field( const char* header,
     }
 }
 
+
+int fd_get_int16( const FieldData* fd , int16_t* val ) {
+    if (fd->type == SEGY_SIGNED_SHORT_2_BYTE) {
+        *val = (int16_t)fd->buffer;
+        return SEGY_OK;
+    }
+    return SEGY_INVALID_FIELD;
+}
+
+int fd_get_int32( const FieldData* fd , int32_t* val ) {
+    if (fd->type == SEGY_SIGNED_INTEGER_4_BYTE) {
+        *val = (int32_t)fd->buffer;
+        return SEGY_OK;
+    }
+    return SEGY_INVALID_FIELD;
+}
+
 int segy_get_field( const char* traceheader, int field, int* f ) {
     if( field < 0 || field >= SEGY_TRACE_HEADER_SIZE )
         return SEGY_INVALID_FIELD;
@@ -648,6 +665,29 @@ int segy_get_bfield( const char* binheader, int field, int32_t* f ) {
     if ( err != SEGY_OK ) return err;
     *f = (int32_t)fd.buffer;
     return err;
+}
+
+int get_field_fd(const char* header, int field, FieldData* fd) {
+    if ( field >= 0 && field < SEGY_TRACE_HEADER_SIZE )
+        return get_field( header, tr_field_type, field, fd );
+    else if ( field >= SEGY_TEXT_HEADER_SIZE && field < SEGY_TEXT_HEADER_SIZE + SEGY_BINARY_HEADER_SIZE )
+        return get_field( header, b_field_type, field-SEGY_TEXT_HEADER_SIZE, fd );
+    else
+        return SEGY_INVALID_FIELD;
+}
+
+int segy_get_field_i16( const char* header, int field, int16_t* val ) {
+    FieldData fd;
+    int err = get_field_fd( header, field, &fd );
+    if( err != SEGY_OK ) return err;
+    return fd_get_int16( &fd, val );
+}
+
+int segy_get_field_i32( const char* header, int field, int32_t* val ) {
+    FieldData fd;
+    int err = get_field_fd( header, field, &fd );
+    if( err != SEGY_OK ) return err;
+    return fd_get_int32( &fd, val );
 }
 
 static int set_field( char* header,
@@ -1306,10 +1346,10 @@ int segy_sample_interval( segy_file* fp, float fallback, float* dt ) {
     }
 
     int32_t bindt = 0;
-    int32_t trdt = 0;
+    int16_t trdt = 0;
 
     segy_get_bfield( bin_header, SEGY_BIN_INTERVAL, &bindt );
-    segy_get_field( trace_header, SEGY_TR_SAMPLE_INTER, &trdt );
+    segy_get_field_i16( trace_header, SEGY_TR_SAMPLE_INTER, &trdt );
 
     float binary_header_dt = (float) bindt;
     float trace_header_dt = (float) trdt;
@@ -2388,17 +2428,18 @@ static int scaled_cdp( segy_file* fp,
                        float* cdpy,
                        long trace0,
                        int trace_bsize ) {
-    int32_t x, y, scalar;
+    int32_t x, y;
+    int16_t scalar;
     char trheader[ SEGY_TRACE_HEADER_SIZE ];
 
     int err = segy_traceheader( fp, traceno, trheader, trace0, trace_bsize );
     if( err != 0 ) return err;
 
-    err = segy_get_field( trheader, SEGY_TR_CDP_X, &x );
+    err = segy_get_field_i32( trheader, SEGY_TR_CDP_X, &x );
     if( err != 0 ) return err;
-    err = segy_get_field( trheader, SEGY_TR_CDP_Y, &y );
+    err = segy_get_field_i32( trheader, SEGY_TR_CDP_Y, &y );
     if( err != 0 ) return err;
-    err = segy_get_field( trheader, SEGY_TR_SOURCE_GROUP_SCALAR, &scalar );
+    err = segy_get_field_i16( trheader, SEGY_TR_SOURCE_GROUP_SCALAR, &scalar );
     if( err != 0 ) return err;
 
     float scale = (float) scalar;
