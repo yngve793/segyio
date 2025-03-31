@@ -684,6 +684,33 @@ int fd_get_int32( const FieldData* fd , int32_t* val ) {
     return SEGY_INVALID_FIELD;
 }
 
+int fd_get_int( const FieldData* fd, int32_t* val ) {
+    switch( fd->type ) {
+    case SEGY_SIGNED_INTEGER_4_BYTE:
+        *val = (int32_t)fd->buffer;
+        return SEGY_OK;
+
+    case SEGY_SIGNED_SHORT_2_BYTE:
+        *val = (int16_t)fd->buffer;
+        return SEGY_OK;
+
+    case SEGY_SIGNED_CHAR_1_BYTE:
+        *val = (int8_t)fd->buffer;
+        return SEGY_OK;
+
+    case SEGY_UNSIGNED_SHORT_2_BYTE:
+        *val = (uint16_t)fd->buffer;
+        return SEGY_OK;
+
+    case SEGY_UNSIGNED_CHAR_1_BYTE:
+        *val = (uint8_t)fd->buffer;
+        return SEGY_OK;
+
+    default:
+        return SEGY_INVALID_FIELD;
+    }
+}
+
 int get_field_fd( const char* header, int field, FieldData* fd ) {
     if ( field >= 0 && field < SEGY_TRACE_HEADER_SIZE )
         return get_field( header, tr_field_type, field, fd );
@@ -726,6 +753,13 @@ int segy_get_field_i32( const char* header, int field, int32_t* val ) {
     int err = get_field_fd( header, field, &fd );
     if( err != SEGY_OK ) return err;
     return fd_get_int32( &fd, val );
+}
+
+int segy_get_field_int( const char* header, int field, int* f ) {
+    FieldData fd;
+    int err = get_field_fd( header, field, &fd );
+    if( err != SEGY_OK ) return err;
+    return fd_get_int( &fd, f );
 }
 
 int segy_get_bfield( const char* binheader, int field, int32_t* f ) {
@@ -851,7 +885,7 @@ int segy_field_forall( segy_file* fp,
     // do a dummy-read of a zero-init'd buffer to check args
     int32_t f;
     char header[ SEGY_TRACE_HEADER_SIZE ] = { 0 };
-    err = segy_get_field( header, field, &f );
+    err = segy_get_field_int( header, field, &f );
     if( err != SEGY_OK ) return SEGY_INVALID_ARGS;
 
     int slicelen = slicelength( start, stop, step );
@@ -1500,9 +1534,9 @@ int segy_sorting( segy_file* fp,
     int xl_first = 0, xl_next = 0, xl_prev = 0;
     int of_first = 0, of_next = 0;
 
-    segy_get_field( traceheader, il, &il_first );
-    segy_get_field( traceheader, xl, &xl_first );
-    segy_get_field( traceheader, tr_offset, &of_first );
+    segy_get_field_int( traceheader, il, &il_first );
+    segy_get_field_int( traceheader, xl, &xl_first );
+    segy_get_field_int( traceheader, tr_offset, &of_first );
 
     il_prev = il_first;
     xl_prev = xl_first;
@@ -1523,9 +1557,9 @@ int segy_sorting( segy_file* fp,
         if( err ) return err;
         ++traceno;
 
-        segy_get_field( traceheader, il, &il_next );
-        segy_get_field( traceheader, xl, &xl_next );
-        segy_get_field( traceheader, tr_offset, &of_next );
+        segy_get_field_int( traceheader, il, &il_next );
+        segy_get_field_int( traceheader, xl, &xl_next );
+        segy_get_field_int( traceheader, tr_offset, &of_next );
 
         /* the exit condition - offset has wrapped around. */
         if( of_next == of_first ) {
@@ -1592,8 +1626,8 @@ int segy_offsets( segy_file* fp,
     err = segy_traceheader( fp, 0, header, trace0, trace_bsize );
     if( err != 0 ) return SEGY_FREAD_ERROR;
 
-    segy_get_field( header, il, &il0 );
-    segy_get_field( header, xl, &xl0 );
+    segy_get_field_int( header, il, &il0 );
+    segy_get_field_int( header, xl, &xl0 );
 
     do {
         ++offsets;
@@ -1603,8 +1637,8 @@ int segy_offsets( segy_file* fp,
         err = segy_traceheader( fp, offsets, header, trace0, trace_bsize );
         if( err != 0 ) return err;
 
-        segy_get_field( header, il, &il1 );
-        segy_get_field( header, xl, &xl1 );
+        segy_get_field_int( header, il, &il1 );
+        segy_get_field_int( header, xl, &xl1 );
     } while( il0 == il1 && xl0 == xl1 );
 
     *out = offsets;
@@ -1627,7 +1661,7 @@ int segy_offset_indices( segy_file* fp,
         const int err = segy_traceheader( fp, i, header, trace0, trace_bsize );
         if( err != SEGY_OK ) return err;
 
-        segy_get_field( header, offset_field, &x );
+        segy_get_field_int( header, offset_field, &x );
         *out++ = x;
     }
 
@@ -1667,10 +1701,10 @@ static int count_lines( segy_file* fp,
 
     int first_lineno, first_offset, ln = 0, off = 0;
 
-    err = segy_get_field( header, field, &first_lineno );
+    err = segy_get_field_int( header, field, &first_lineno );
     if( err != 0 ) return err;
 
-    err = segy_get_field( header, 37, &first_offset );
+    err = segy_get_field_int( header, 37, &first_offset );
     if( err != 0 ) return err;
 
     int lines = 1;
@@ -1683,8 +1717,8 @@ static int count_lines( segy_file* fp,
         err = segy_traceheader( fp, curr, header, trace0, trace_bsize );
         if( err != 0 ) return err;
 
-        segy_get_field( header, field, &ln );
-        segy_get_field( header, 37, &off );
+        segy_get_field_int( header, field, &ln );
+        segy_get_field_int( header, 37, &off );
 
         if( first_offset == off && ln == first_lineno ) break;
 
