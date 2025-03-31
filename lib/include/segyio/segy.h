@@ -107,8 +107,6 @@ int segy_set_format( segy_file*, int format );
  */
 int segy_set_endianness( segy_file*, int opt );
 
-int segy_get_field( const char* traceheader, int field, int32_t* f );
-int segy_get_bfield( const char* binheader, int field, int32_t* f );
 int segy_set_field( char* traceheader, int field, int32_t val );
 int segy_set_bfield( char* binheader, int field, int32_t val );
 
