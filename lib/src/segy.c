@@ -652,6 +652,14 @@ int fd_get_uint8( const FieldData* fd , uint8_t* val ) {
     return SEGY_INVALID_FIELD;
 }
 
+int fd_get_uint16( const FieldData* fd, uint16_t* val ) {
+    if (fd->type == SEGY_UNSIGNED_SHORT_2_BYTE) {
+        *val = (uint16_t)fd->buffer;
+        return SEGY_OK;
+    }
+    return SEGY_INVALID_FIELD;
+}
+
 int get_field_fd( const char* header, int field, FieldData* fd ) {
     if ( field >= 0 && field < SEGY_TRACE_HEADER_SIZE )
         return get_field( header, tr_field_type, field, fd );
@@ -666,6 +674,13 @@ int segy_get_field_u8( const char* header, int field, uint8_t* val ) {
     int err = get_field_fd( header, field, &fd );
     if( err != SEGY_OK ) return err;
     return fd_get_uint8( &fd, val );
+}
+
+int segy_get_field_u16( const char* header, int field, uint16_t* val ) {
+    FieldData fd;
+    int err = get_field_fd( header, field, &fd );
+    if( err != SEGY_OK ) return err;
+    return fd_get_uint16( &fd, val );
 }
 
 int segy_get_bfield( const char* binheader, int field, int32_t* f ) {
@@ -1019,8 +1034,8 @@ int segy_set_endianness( segy_file* fp, int endianness) {
 }
 
 int segy_samples( const char* binheader ) {
-    int32_t samples = 0;
-    segy_get_bfield( binheader, SEGY_BIN_SAMPLES, &samples );
+    uint16_t samples = 0;
+    segy_get_field_u16( binheader, SEGY_BIN_SAMPLES, &samples );
     samples = (int32_t)((uint16_t)samples);
 
     int32_t ext_samples = 0;
