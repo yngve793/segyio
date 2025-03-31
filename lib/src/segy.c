@@ -660,6 +660,14 @@ int fd_get_uint16( const FieldData* fd, uint16_t* val ) {
     return SEGY_INVALID_FIELD;
 }
 
+int fd_get_uint32( const FieldData* fd, uint32_t* val ) {
+    if (fd->type == SEGY_SIGNED_INTEGER_4_BYTE) {
+        *val = (uint32_t)fd->buffer;
+        return SEGY_OK;
+    }
+    return SEGY_INVALID_FIELD;
+}
+
 int get_field_fd( const char* header, int field, FieldData* fd ) {
     if ( field >= 0 && field < SEGY_TRACE_HEADER_SIZE )
         return get_field( header, tr_field_type, field, fd );
@@ -681,6 +689,13 @@ int segy_get_field_u16( const char* header, int field, uint16_t* val ) {
     int err = get_field_fd( header, field, &fd );
     if( err != SEGY_OK ) return err;
     return fd_get_uint16( &fd, val );
+}
+
+int segy_get_field_u32( const char* header, int field, uint32_t* val ) {
+    FieldData fd;
+    int err = get_field_fd( header, field, &fd );
+    if( err != SEGY_OK ) return err;
+    return fd_get_uint32( &fd, val );
 }
 
 int segy_get_bfield( const char* binheader, int field, int32_t* f ) {
