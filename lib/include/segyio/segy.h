@@ -47,6 +47,9 @@ typedef struct {
     int32_t field_id;
 } field_data;
 
+
+int field_data_set_value( field_data* fd, int val );
+
 segy_file* segy_open( const char* path, const char* mode );
 int segy_mmap( segy_file* );
 int segy_flush( segy_file*, bool async );
