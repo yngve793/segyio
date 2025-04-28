@@ -48,7 +48,7 @@ typedef struct {
 } field_data;
 
 
-int field_data_set_value( field_data* fd, int val );
+int fd_set_int( field_data* fd, int val );
 
 segy_file* segy_open( const char* path, const char* mode );
 int segy_mmap( segy_file* );
