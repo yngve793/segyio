@@ -727,11 +727,9 @@ int segy_get_bfield( const char* binheader, int field, int32_t* val ) {
 }
 
 static int set_field( char* header,
-                      const uint8_t* table,
                       const field_data* fd ) {
 
-    field_data w_fd = {.value = fd->value, .field_id = fd->field_id,
-                       .datatype = table[ fd->field_id ]};
+    field_data w_fd = *fd;
 
     switch ( w_fd.datatype ) {
 
@@ -769,7 +767,7 @@ static int set_field( char* header,
 }
 
 
-int field_data_set_value( field_data* fd, int val ) {
+int fd_set_int( field_data* fd, int val ) {
     switch( fd->datatype ) {
         case SEGY_SIGNED_INTEGER_4_BYTE:
             fd->value.i32 = val;
@@ -805,29 +803,27 @@ int field_data_set_value( field_data* fd, int val ) {
 }
 
 int segy_set_field( char* traceheader, int field, int val ) {
-    if( field < 0 || field >= SEGY_TRACE_HEADER_SIZE )
-        return SEGY_INVALID_FIELD;
-
     field_data fd;
-    fd.field_id = field;
-    fd.datatype = tr_field_type[ field ];
-    int err = field_data_set_value( &fd, val );
+    int err = init_field_data( field, &fd );
     if ( err != SEGY_OK ) return err;
-    return set_field( traceheader, tr_field_type, &fd );
+
+    err = fd_set_int( &fd, val );
+    if ( err != SEGY_OK ) return err;
+    return set_field( traceheader, &fd );
 }
 
 int segy_set_bfield( char* binheader, int field, int val ) {
-    field -= SEGY_TEXT_HEADER_SIZE;
-
-    if( field < 0 || field >= SEGY_BINARY_HEADER_SIZE )
-        return SEGY_INVALID_FIELD;
 
     field_data fd;
-    fd.field_id = field;
-    fd.datatype = bin_field_type[field];
-    int err = field_data_set_value( &fd, val );
+    int err = init_field_data( field, &fd );
     if ( err != SEGY_OK ) return err;
-    return set_field( binheader, bin_field_type, &fd );
+
+    err = fd_set_int( &fd, val );
+    if ( err != SEGY_OK ) return err;
+    fd.field_id -= SEGY_TEXT_HEADER_SIZE;
+    err = set_field( binheader, &fd );
+    fd.field_id += SEGY_TEXT_HEADER_SIZE;
+    return err;
 }
 
 static int slicelength( int start, int stop, int step ) {
