@@ -108,6 +108,9 @@ int segy_set_endianness( segy_file*, int opt );
 int init_field_data(int field, field_data* fd);
 int fd_get_int( const field_data* fd, int* val );
 
+void ibm2ieee( void* to, const void* from );
+void ieee2ibm( void* to, const void* from );
+
 int segy_get_field( const char* traceheader, int field, int32_t* f );
 int segy_get_bfield( const char* binheader, int field, int32_t* f );
 int segy_set_field( char* traceheader, int field, int32_t val );
