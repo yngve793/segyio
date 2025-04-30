@@ -10,6 +10,7 @@ segy_write_binheader
 segy_samples
 segy_sample_interval
 segy_format
+segy_get_field_u8
 segy_set_format
 segy_set_endianness
 segy_get_field
