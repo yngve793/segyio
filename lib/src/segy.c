@@ -628,10 +628,7 @@ no_mmap:
     return err;
 }
 
-static int get_field( const char* header,
-                      const uint8_t* table,
-                      field_data* fd) {
-    fd->datatype = table[ fd->field_id ];
+static int get_field( const char* header, field_data* fd) {
 
     switch ( fd->datatype ) {
 
@@ -691,30 +688,42 @@ int fd_get_int( const field_data* fd, int* val ) {
     }
 }
 
-int segy_get_field( const char* traceheader, int field, int* f ) {
-    if( field < 0 || field >= SEGY_TRACE_HEADER_SIZE )
+int init_field_data(int field, field_data* fd) {
+    fd->field_id = field;
+    if ( field > 0 && field < SEGY_TRACE_HEADER_SIZE )
+        fd->datatype = tr_field_type[ field ];
+    else if ( field > SEGY_TEXT_HEADER_SIZE && field < SEGY_TEXT_HEADER_SIZE + SEGY_BINARY_HEADER_SIZE )
+        fd->datatype = bin_field_type[ field - SEGY_TEXT_HEADER_SIZE ];
+    else
         return SEGY_INVALID_FIELD;
+    if ( fd->datatype == SEGY_UNDEFINED_FIELD )
+        return SEGY_INVALID_FIELD;
+    return SEGY_OK;
+}
+
+int segy_get_field( const char* traceheader, int field, int* val ) {
 
     field_data fd;
-    fd.field_id = field;
-    int err = get_field( traceheader, tr_field_type, &fd );
+    int err = init_field_data( field, &fd );
     if ( err != SEGY_OK ) return err;
-    err = fd_get_int( &fd, f );
+
+    err = get_field( traceheader, &fd );
+    if ( err != SEGY_OK ) return err;
+    err = fd_get_int( &fd, val );
     return err;
 }
 
-int segy_get_bfield( const char* binheader, int field, int32_t* f ) {
-    field -= SEGY_TEXT_HEADER_SIZE;
-
-    if( field < 0 || field >= SEGY_BINARY_HEADER_SIZE )
-        return SEGY_INVALID_FIELD;
+int segy_get_bfield( const char* binheader, int field, int32_t* val ) {
 
     field_data fd;
-    fd.field_id = field;
-    int err = get_field( binheader, bin_field_type, &fd );
+    int err = init_field_data( field, &fd );
     if ( err != SEGY_OK ) return err;
-    err = fd_get_int( &fd, f );
-    return err;
+
+    fd.field_id -= SEGY_TEXT_HEADER_SIZE;
+    err = get_field( binheader, &fd );
+    fd.field_id += SEGY_TEXT_HEADER_SIZE;
+    if ( err != SEGY_OK ) return err;
+    return fd_get_int( &fd, val );
 }
 
 static int set_field( char* header,
@@ -900,8 +909,9 @@ int segy_field_forall( segy_file* fp,
             segy_seek( fp, i, trace0, trace_bsize );
 
             field_data fd;
-            fd.field_id = field;
-            err = get_field( fp->cur, tr_field_type, &fd );
+            err = init_field_data(field, &fd);
+            if ( err != SEGY_OK ) return err;
+            err = get_field( fp->cur, &fd );
             if( err != 0 ) return err;
             err = fd_get_int( &fd, &f );
             if( err != 0 ) return err;
@@ -930,8 +940,9 @@ int segy_field_forall( segy_file* fp,
         if( readc != 1 ) return SEGY_FREAD_ERROR;
 
         field_data fd;
-        fd.field_id = field;
-        err = get_field( header, tr_field_type, &fd );
+        err = init_field_data(field, &fd);
+        if ( err != SEGY_OK ) return err;
+        err = get_field( header, &fd );
         if( err != 0 ) return err;
         err = fd_get_int( &fd, &f );
         if( err != 0 ) return err;

@@ -470,6 +470,7 @@ int segy_crossline_stride( int sorting,
 
 
 typedef enum {
+    SEGY_UNDEFINED_FIELD = 0,
     SEGY_IBM_FLOAT_4_BYTE = 1,
     SEGY_SIGNED_INTEGER_4_BYTE = 2,
     SEGY_SIGNED_SHORT_2_BYTE = 3,
