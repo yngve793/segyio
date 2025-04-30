@@ -722,16 +722,17 @@ int init_field_data(int field, field_data* fd) {
 }
 
 int get_field_fd( const char* header, field_data* fd ) {
-    if ( fd->field_id >= 0 && fd->field_id < SEGY_TRACE_HEADER_SIZE )
+    if ( fd->field_id > 0 && fd->field_id < SEGY_TRACE_HEADER_SIZE )
         return get_field( header, fd );
-    else if ( fd->field_id >= SEGY_TEXT_HEADER_SIZE && fd->field_id < SEGY_TEXT_HEADER_SIZE + SEGY_BINARY_HEADER_SIZE ) {
+
+    if ( fd->field_id > SEGY_TEXT_HEADER_SIZE && fd->field_id < SEGY_TEXT_HEADER_SIZE + SEGY_BINARY_HEADER_SIZE ) {
         fd->field_id -= SEGY_TEXT_HEADER_SIZE;
         int err = get_field( header, fd );
         fd->field_id += SEGY_TEXT_HEADER_SIZE;
         return err;
     }
-    else
-        return SEGY_INVALID_FIELD;
+
+    return SEGY_INVALID_FIELD;
 }
 
 int segy_get_field_u8( const char* header, int field, uint8_t* val ) {
@@ -740,8 +741,6 @@ int segy_get_field_u8( const char* header, int field, uint8_t* val ) {
     if ( err != SEGY_OK ) return err;
     err = get_field_fd( header, &fd );
     if( err != SEGY_OK ) return err;
-    if ( fd.datatype != SEGY_UNSIGNED_CHAR_1_BYTE )
-        return SEGY_INVALID_FIELD_DATATYPE;
     *val = fd.value.u8;
     return SEGY_OK;
 }
