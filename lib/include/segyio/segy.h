@@ -56,6 +56,7 @@ int segy_get_field_u16( const char* header, int field, uint16_t* val );
 int segy_get_field_u32( const char* header, int field, uint32_t* val );
 int segy_get_field_i16( const char* header, int field, int16_t* val );
 int segy_get_field_i32( const char* header, int field, int32_t* val );
+int segy_get_field_int( const char* header, int field, int* f );
 segy_file* segy_open( const char* path, const char* mode );
 int segy_mmap( segy_file* );
 int segy_flush( segy_file* );
