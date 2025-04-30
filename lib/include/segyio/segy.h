@@ -102,6 +102,7 @@ int segy_set_format( segy_file*, int format );
  */
 int segy_set_endianness( segy_file*, int opt );
 
+int init_field_data(int field, field_data* fd);
 int fd_get_int( const field_data* fd, int* val );
 
 int segy_get_field( const char* traceheader, int field, int32_t* f );
@@ -467,6 +468,7 @@ int segy_crossline_stride( int sorting,
 
 
 typedef enum {
+    SEGY_UNDEFINED_FIELD = 0,
     SEGY_IBM_FLOAT_4_BYTE = 1,
     SEGY_SIGNED_INTEGER_4_BYTE = 2,
     SEGY_SIGNED_SHORT_2_BYTE = 3,
