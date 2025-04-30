@@ -755,16 +755,6 @@ int segy_get_field_u16( const char* header, int field, uint16_t* val ) {
     return SEGY_OK;
 }
 
-int segy_get_field_u32( const char* header, int field, uint32_t* val ) {
-    field_data fd;
-    int err = init_field_data( field, &fd );
-    if ( err != SEGY_OK ) return err;
-    err = get_field_fd( header, &fd );
-    if( err != SEGY_OK ) return err;
-    *val = fd.value.u32;
-    return SEGY_OK;
-}
-
 int segy_get_field_i16( const char* header, int field, int16_t* val ) {
     field_data fd;
     int err = init_field_data( field, &fd );

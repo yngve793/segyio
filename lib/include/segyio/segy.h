@@ -53,7 +53,6 @@ int fd_set_int( field_data* fd, int val );
 int get_field_fd( const char* header, field_data* fd );
 int segy_get_field_u8( const char* header, int field, uint8_t* val );
 int segy_get_field_u16( const char* header, int field, uint16_t* val );
-int segy_get_field_u32( const char* header, int field, uint32_t* val );
 int segy_get_field_i16( const char* header, int field, int16_t* val );
 int segy_get_field_i32( const char* header, int field, int32_t* val );
 int segy_get_field_int( const char* header, int field, int* f );
