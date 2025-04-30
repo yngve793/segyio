@@ -771,6 +771,8 @@ int segy_get_field_i32( const char* header, int field, int32_t* val ) {
     if ( err != SEGY_OK ) return err;
     err = get_field_fd( header, &fd );
     if( err != SEGY_OK ) return err;
+    if ( fd.datatype != SEGY_SIGNED_INTEGER_4_BYTE )
+        return SEGY_INVALID_FIELD_DATATYPE;
     *val = fd.value.i32;
     return SEGY_OK;
 }
