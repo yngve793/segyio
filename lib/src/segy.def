@@ -18,8 +18,6 @@ segy_get_field_i32
 segy_get_field_int
 segy_set_format
 segy_set_endianness
-segy_get_field
-segy_get_bfield
 segy_set_field
 segy_set_bfield
 segy_field_forall
