@@ -52,6 +52,7 @@ int fd_set_int( field_data* fd, int val );
 
 int get_field_fd( const char* header, field_data* fd );
 int segy_get_field_u8( const char* header, int field, uint8_t* val );
+int segy_get_field_u16( const char* header, int field, uint16_t* val );
 segy_file* segy_open( const char* path, const char* mode );
 int segy_mmap( segy_file* );
 int segy_flush( segy_file* );
