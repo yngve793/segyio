@@ -751,8 +751,6 @@ int segy_get_field_u16( const char* header, int field, uint16_t* val ) {
     if ( err != SEGY_OK ) return err;
     err = get_field_fd( header, &fd );
     if( err != SEGY_OK ) return err;
-    if ( fd.datatype != SEGY_UNSIGNED_SHORT_2_BYTE )
-        return SEGY_INVALID_FIELD_DATATYPE;
     *val = fd.value.u16;
     return SEGY_OK;
 }
