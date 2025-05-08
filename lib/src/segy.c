@@ -127,6 +127,22 @@ static uint32_t htobe32( uint32_t v ) {
 #endif
 }
 
+static uint64_t htobe64( uint64_t v) {
+#if HOST_LSB
+    return bswap64(v);
+#else
+    return v;
+#endif
+}
+
+static double htobe64f( double v) {
+    #if HOST_LSB
+        return bswap64(v);
+    #else
+        return v;
+    #endif
+}
+
 static uint16_t be16toh( uint16_t v ) {
 #if HOST_LSB
     return bswap16(v);
@@ -142,6 +158,22 @@ static uint32_t be32toh( uint32_t v ) {
     return v;
 #endif
 }
+
+static uint64_t be64toh( uint64_t v ) {
+#if HOST_LSB
+    return bswap64(v);
+#else
+    return v;
+#endif
+}
+
+static double be64ftoh( double v ) {
+    #if HOST_LSB
+        return bswap64(v);
+    #else
+        return v;
+    #endif
+    }
 
 
 #define IEEEMAX 0x7FFFFFFF
@@ -644,6 +676,11 @@ static int get_field( const char* header, segy_field_data* fd) {
 
     switch ( fd->datatype ) {
 
+        case SEGY_SIGNED_INTEGER_8_BYTE:
+            memcpy( &(fd->value.i64), header + (fd->field_index -1), formatsize( fd->datatype ) );
+            fd->value.i64 = be64toh( fd->value.i64 );
+            return SEGY_OK;
+
         case SEGY_SIGNED_INTEGER_4_BYTE:
             memcpy( &(fd->value.i32), header + (fd->field_index -1), formatsize( fd->datatype ) );
             fd->value.i32 = be32toh( fd->value.i32 );
@@ -658,6 +695,16 @@ static int get_field( const char* header, segy_field_data* fd) {
             memcpy( &(fd->value.i8), header + (fd->field_index -1), formatsize( fd->datatype ) );
             return SEGY_OK;
 
+        case SEGY_UNSIGNED_INTEGER_8_BYTE:
+            memcpy( &(fd->value.u64), header + (fd->field_index -1), formatsize( fd->datatype ) );
+            fd->value.u64 = be64toh( fd->value.u64 );
+            return SEGY_OK;
+
+        case SEGY_UNSIGNED_INTEGER_4_BYTE:
+            memcpy( &(fd->value.u32), header + (fd->field_index -1), formatsize( fd->datatype ) );
+            fd->value.u32 = be32toh( fd->value.u32 );
+            return SEGY_OK;
+
         case SEGY_UNSIGNED_SHORT_2_BYTE:
             memcpy( &(fd->value.u16), header + (fd->field_index -1), formatsize( fd->datatype ) );
             fd->value.u16 = be16toh( fd->value.u16 );
@@ -665,6 +712,11 @@ static int get_field( const char* header, segy_field_data* fd) {
 
         case SEGY_UNSIGNED_CHAR_1_BYTE:
             memcpy( &(fd->value.u8), header + (fd->field_index -1), formatsize( fd->datatype ) );
+            return SEGY_OK;
+
+        case SEGY_IEEE_FLOAT_8_BYTE:
+            memcpy( &(fd->value.f64), header + (fd->field_index -1), formatsize( fd->datatype ) );
+            fd->value.f64 = be64ftoh( fd->value.f64 );
             return SEGY_OK;
 
         default:
@@ -782,6 +834,11 @@ static int set_field( char* header,
 
     switch ( fd->datatype ) {
 
+        case SEGY_SIGNED_INTEGER_8_BYTE:
+            fv.i64 = htobe64( fv.i64 );
+            memcpy( header + (fd->field_index - 1), &(fv.i64), formatsize( fd->datatype ));
+            return SEGY_OK;
+
         case SEGY_SIGNED_INTEGER_4_BYTE:
             fv.i32 = htobe32( fv.i32 );
             memcpy( header + (fd->field_index - 1), &(fv.i32), formatsize( fd->datatype ));
@@ -796,6 +853,11 @@ static int set_field( char* header,
             memcpy( header + (fd->field_index - 1), &(fv.i8), formatsize( fd->datatype ));
             return SEGY_OK;
 
+        case SEGY_UNSIGNED_INTEGER_8_BYTE:
+            fv.u64 = htobe64( fv.u64 );
+            memcpy( header + (fd->field_index - 1), &(fv.u64), formatsize( fd->datatype ));
+            return SEGY_OK;
+
         case SEGY_UNSIGNED_INTEGER_4_BYTE:
             fv.u32 = htobe32( fv.u32 );
             memcpy( header + (fd->field_index - 1), &(fv.u32), formatsize( fd->datatype ));
@@ -808,6 +870,11 @@ static int set_field( char* header,
 
         case SEGY_UNSIGNED_CHAR_1_BYTE:
             memcpy( header + (fd->field_index - 1), &(fv.u8), formatsize( fd->datatype ));
+            return SEGY_OK;
+
+        case SEGY_IEEE_FLOAT_8_BYTE:
+            fv.f64 = htobe64f( fv.f64 );
+            memcpy( header + (fd->field_index - 1), &(fv.f64), formatsize( fd->datatype ));
             return SEGY_OK;
 
         default:
