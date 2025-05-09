@@ -753,6 +753,7 @@ static int fd_get_int( const segy_field_data* fd, int* val ) {
 }
 
 static int init_segy_field_data(int field, segy_field_data* fd) {
+    fd->value.u64 = 0;
     if ( field > 0 && field < SEGY_TRACE_HEADER_SIZE ) {
         fd->field_index = field;
         fd->field_offset = 0;
