@@ -135,13 +135,13 @@ static uint64_t htobe64( uint64_t v) {
 #endif
 }
 
-static double htobe64f( double v) {
-    #if HOST_LSB
-        return bswap64(v);
-    #else
-        return v;
-    #endif
-}
+// static double htobe64f( double v) {
+//     #if HOST_LSB
+//         return bswap64(v);
+//     #else
+//         return v;
+//     #endif
+// }
 
 static uint16_t be16toh( uint16_t v ) {
 #if HOST_LSB
@@ -167,13 +167,13 @@ static uint64_t be64toh( uint64_t v ) {
 #endif
 }
 
-static double be64ftoh( double v ) {
-    #if HOST_LSB
-        return bswap64(v);
-    #else
-        return v;
-    #endif
-    }
+// static double be64ftoh( double v ) {
+//     #if HOST_LSB
+//         return bswap64(v);
+//     #else
+//         return v;
+//     #endif
+// }
 
 
 #define IEEEMAX 0x7FFFFFFF
@@ -716,7 +716,7 @@ static int get_field( const char* header, segy_field_data* fd) {
 
         case SEGY_IEEE_FLOAT_8_BYTE:
             memcpy( &(fd->value.f64), header + (fd->field_index -1), formatsize( fd->datatype ) );
-            fd->value.f64 = be64ftoh( fd->value.f64 );
+            fd->value.u64 = be64toh( fd->value.u64 );
             return SEGY_OK;
 
         default:
@@ -897,7 +897,7 @@ static int set_field( char* header,
             return SEGY_OK;
 
         case SEGY_IEEE_FLOAT_8_BYTE:
-            fv.f64 = htobe64f( fv.f64 );
+            fv.u64 = htobe64( fv.u64 );
             memcpy( header + (fd->field_index - 1), &(fv.f64), formatsize( fd->datatype ));
             return SEGY_OK;
 
