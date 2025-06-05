@@ -102,6 +102,8 @@ struct segy_datasource {
      * amount of data at the cost of many requests.
      */
     bool minimize_requests_number;
+
+    bool memory_speedup; // true if this is a memory-mapped file
 };
 
 typedef struct segy_datasource segy_datasource;

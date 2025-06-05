@@ -665,6 +665,7 @@ segy_file* segy_open( const char* path, const char* mode ) {
     ds->flush = fileflush;
     ds->close = fileclose;
     ds->writable = strstr( binary_mode, "+" ) || strstr( binary_mode, "w" );
+    ds->memory_speedup = false;
 
     // on init assume a size of 4-bytes-per-element and big-endian
     ds->elemsize = 4;
@@ -721,6 +722,7 @@ int segy_mmap( segy_datasource* ds ) {
     ds->size = memsize;
     ds->flush = mmapflush;
     ds->close = mmapclose;
+    ds->memory_speedup = true;
 
     ds->minimize_requests_number = false;
 
@@ -2126,7 +2128,7 @@ int segy_readsubtr( segy_datasource* ds,
     char* dst = (char*)buf;
 
     if( !ds->minimize_requests_number ) {
-        if( ds->read == memread && ds->seek == memseek ) {
+        if( ds->memory_speedup ) {
             // separate "memory" path is used for better performance
             memfile* mp = (memfile*)ds->stream;
             const char* cur = (char*)mp->cur + elemsize * defstart;
@@ -2281,7 +2283,7 @@ int segy_writesubtr( segy_datasource* ds,
 
         if( !ds->lsb ) {
             // separate "memory" path is used for better performance
-            if( ds->read == memread && ds->seek == memseek ) {
+            if( ds->memory_speedup ) {
                 memfile* mp = (memfile*)ds->stream;
                 char* cur = (char*)mp->cur;
                 for( ; slicelen > 0; cur += step, src += elemsize, --slicelen ) {
