@@ -1720,7 +1720,7 @@ PyObject* getfield( PyObject*, PyObject *args ) {
             break;
         case SEGY_TRACE_HEADER_SIZE:
             err = segy_get_tracefield(
-                buffer.buf<const char>(), segy_traceheader_default_map(), field, &fd
+                buffer.buf<const char>(), segy_traceheader_default(), field, &fd
             );
             break;
         default:

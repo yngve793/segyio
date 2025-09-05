@@ -362,6 +362,11 @@ typedef struct {
     bool requires_nonzero_value; //use only if field value is not zero
 } segy_entry_definition;
 
+typedef struct {
+    const segy_entry_definition* mapping;
+    uint16_t mapping_size;
+} segy_mapping_definition;
+
 
 /*
  * About signatures:
@@ -455,12 +460,14 @@ const segy_entry_definition* segy_binheader_map( void );
 /* Default trace header layout map. Indicies (offsets) are 0-based. */
 const segy_entry_definition* segy_traceheader_default_map( void );
 
+const segy_mapping_definition* segy_traceheader_default( void );
+
 /* Reads one trace field data from given 0-based header. 0-based
  * offset-to-entry-definition mapping should correspond to provided header.
  * Field parameter should be 1-based offset, as in, e.g., SEGY_FIELD array.
  */
 int segy_get_tracefield( const char* header,
-                         const segy_entry_definition* mapping,
+                         const segy_mapping_definition* mapping_definition,
                          int field,
                          segy_field_data* fd );
 

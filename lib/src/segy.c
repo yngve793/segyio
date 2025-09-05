@@ -377,12 +377,27 @@ static const segy_entry_definition binheader_map[SEGY_BINARY_HEADER_SIZE] = {
 };
 
 const segy_entry_definition* segy_traceheader_default_map( void ) {
-    return traceheader_default_map;
+    return &traceheader_default_map[0];
 
 }
-const segy_entry_definition* segy_binheader_map( void ) {
-    return binheader_map;
+
+static const segy_mapping_definition traceheader_default = {
+    .mapping = traceheader_default_map,
+    .mapping_size = SEGY_TRACE_HEADER_SIZE
+};
+
+const segy_mapping_definition* segy_traceheader_default( void ) {
+    return &traceheader_default;
 }
+
+const segy_entry_definition* segy_binheader_map( void ) {
+    return &binheader_map[0];
+}
+
+const segy_mapping_definition binheader_default = {
+    .mapping = binheader_map,
+    .mapping_size = SEGY_BINARY_HEADER_SIZE
+};
 
 /*
  * Determine the file size in bytes. If this function succeeds, the file
@@ -873,16 +888,15 @@ SEGY_FORMAT segy_entry_type_to_format( SEGY_ENTRY_TYPE entry_type ) {
 
 
 static int get_field( const char* header,
-                      const segy_entry_definition* mapping,
-                      int mapsize,
+                      const segy_mapping_definition* mapping_definition,
                       int offset,
                       segy_field_data* fd ) {
 
-    if ( offset < 0 || offset >= mapsize ) {
+    if ( offset < 0 || offset >= mapping_definition->mapping_size ) {
         return SEGY_INVALID_FIELD;
     }
 
-    fd->datatype = segy_entry_type_to_format( mapping[offset].entry_type );
+    fd->datatype = segy_entry_type_to_format( mapping_definition->mapping[offset].entry_type );
     uint64_t val;
     switch ( fd->datatype ) {
 
@@ -937,13 +951,12 @@ static int get_field( const char* header,
 }
 
 static int get_field_int( const char* header,
-                          const segy_entry_definition* mapping,
-                          int mapsize,
+                          const segy_mapping_definition* mapping_definition,
                           int offset,
                           int* val ) {
 
     segy_field_data fd;
-    int err = get_field( header, mapping, mapsize, offset, &fd );
+    int err = get_field( header, mapping_definition, offset, &fd );
     if ( err != SEGY_OK ) return err;
 
     switch( fd.datatype ) {
@@ -1098,13 +1111,12 @@ static int set_field_int( char* header,
 
 
 int segy_get_tracefield( const char* header,
-                         const segy_entry_definition* mapping,
+                         const segy_mapping_definition* mapping_definition,
                          int field,
                          segy_field_data* fd ) {
 
     int offset = field - 1;
-    int mapsize = SEGY_TRACE_HEADER_SIZE;
-    return get_field( header, mapping, mapsize, offset, fd);
+    return get_field( header, mapping_definition, offset, fd);
 }
 
 int segy_set_tracefield( char* header,
@@ -1122,8 +1134,7 @@ int segy_get_binfield( const char* header,
                        segy_field_data* fd ) {
 
     int offset = field - SEGY_TEXT_HEADER_SIZE - 1;
-    int mapsize = SEGY_BINARY_HEADER_SIZE;
-    return get_field( header, binheader_map, mapsize, offset, fd );
+    return get_field( header, &binheader_default, offset, fd );
 }
 
 int segy_set_binfield( char* header,
@@ -1140,8 +1151,7 @@ int segy_get_tracefield_int( const char* header,
                              int* f ) {
 
     int offset = field - 1;
-    int mapsize = SEGY_TRACE_HEADER_SIZE;
-    return get_field_int( header, traceheader_default_map, mapsize, offset, f );
+    return get_field_int( header, &traceheader_default, offset, f );
 }
 
 int segy_set_tracefield_int( char* header,
@@ -1158,8 +1168,7 @@ int segy_get_binfield_int( const char* header,
                            int* f ) {
 
     int offset = field - SEGY_TEXT_HEADER_SIZE - 1;
-    int mapsize = SEGY_BINARY_HEADER_SIZE;
-    return get_field_int( header, binheader_map, mapsize, offset, f );
+    return get_field_int(  header, &binheader_default, offset, f );
 }
 
 int segy_set_binfield_int( char* header,

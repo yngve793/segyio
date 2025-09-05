@@ -2061,7 +2061,7 @@ TEST_CASE( "segy_get_field reads values correctly", "[c.segy]" ) {
 
         segy_field_data read_value;
         Err err = segy_get_tracefield(
-            header, segy_traceheader_default_map(), SEGY_TR_TRACE_ID, &read_value
+            header, segy_traceheader_default(), SEGY_TR_TRACE_ID, &read_value
         );
         CHECK( success( err ) );
         CHECK( read_value.datatype == SEGY_SIGNED_SHORT_2_BYTE );
@@ -2140,12 +2140,12 @@ TEST_CASE( "segy_get/set_bin/tracefield errors", "[c.segy]" ) {
         segy_field_data fd;
 
         Err err = segy_get_tracefield(
-            header, segy_traceheader_default_map(), 0, &fd
+            header, segy_traceheader_default(), 0, &fd
         );
         CHECK( err == Err::field() );
 
         err = segy_get_tracefield(
-            header, segy_traceheader_default_map(), SEGY_TRACE_HEADER_SIZE + 1, &fd
+            header, segy_traceheader_default(), SEGY_TRACE_HEADER_SIZE + 1, &fd
         );
         CHECK( err == Err::field() );
 
